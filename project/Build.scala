@@ -4,8 +4,8 @@ import play.Project._
 
 object ApplicationBuild extends Build {
 
-  val appName         = "hello-play"
-  val appVersion      = "1.0-SNAPSHOT"
+  val appName = "crawler"
+  val appVersion = "1.0-SNAPSHOT"
 
   val appDependencies = Seq(
     // Select Play modules
@@ -15,14 +15,15 @@ object ApplicationBuild extends Build {
     //javaEbean, // Java Ebean plugin
     //javaJpa,   // Java JPA plugin
     //filters,   // A set of built-in filters
-    javaCore,  // The core Java API
-  
+    javaCore, // The core Java API
+
     // WebJars pull in client-side web libraries
     "org.webjars" % "webjars-play" % "2.1.0",
-    "org.webjars" % "bootstrap" % "2.3.1"
-  
-    // Add your own project dependencies in the form:
-    // "group" % "artifact" % "version"
+    "org.webjars" % "bootstrap" % "2.3.1",
+
+  // Add your own project dependencies in the form:
+  // "group" % "artifact" % "version"
+  "org.jsoup" % "jsoup" % "1.7.2"
   )
 
   val main = play.Project(appName, appVersion, appDependencies).settings(
