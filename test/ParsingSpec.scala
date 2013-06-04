@@ -1,3 +1,4 @@
+import UglyTester.Site
 import org.scalatest.FunSuite
 
 /**
@@ -9,6 +10,6 @@ import org.scalatest.FunSuite
  */
 class ParsingSpec extends FunSuite{
    test("checking the HTML"){
-     PageProcessor.fetch(new Site("http://www1.macys.com/shop/womens-clothing/dresses?id=5449&edge=hybrid&cm_sp=us_catsplash_women-_-row5-_-Dresses"))
+     UglyTester.fetch(new Site("http://www1.macys.com/shop/womens-clothing/dresses?id=5449&edge=hybrid&cm_sp=us_catsplash_women-_-row5-_-Dresses"))
    }
 }
