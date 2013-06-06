@@ -15,7 +15,7 @@
 
 
 	//START
-	SetupDOMSelection();
+//	SetupDOMSelection();
 
 
 
@@ -92,7 +92,7 @@
 		//c is object of class classMausWork
 		c.element.addEventListener("mouseover",c.mouse_over,false);
 		c.element.addEventListener("mouseout",c.mouse_out,false);
-		c.element.addEventListener("mousedown",c.mouse_click,false);
+//		c.element.addEventListener("mousedown",c.mouse_click,false);
 	}
 
 	function detachMouseEventListeners(c)
@@ -101,7 +101,7 @@
 		c.resetElementStyle();
 		c.element.removeEventListener("mouseover",c.mouse_over,false);
 		c.element.removeEventListener("mouseout",c.mouse_out,false);
-		c.element.removeEventListener("mousedown",c.mouse_click,false);
+//		c.element.removeEventListener("mousedown",c.mouse_click,false);
 	}
 
 	//mouse event  handling class for element, el.
@@ -126,7 +126,7 @@
 			gHoverElement=e;
 			gHovering=true;
 			target=ev.target;
-			console.log(ElementInfo(e))
+			console.log(ElementInfo(element))
 			ev.stopPropagation();
 		};
 
@@ -158,6 +158,7 @@
 //			if(ev.button==0)
 //			{
 //				gSelectedElement=e;
+//				console.log(ElementInfo(element))
 //				//ElementSelected(e);	//finished selecting, cleanup then move to next part (section 2), element isolation.
 //			}
 //		};

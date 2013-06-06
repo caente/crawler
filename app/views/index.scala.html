@@ -1,22 +1,18 @@
-@(lines: List[String])
+@(message: String)
 
 @main("Welcome to Play Framework") {
 
     <script type='text/javascript' src='@routes.Assets.at("javascripts/index.min.js")'></script>
-<script type='text/javascript' src='@routes.Assets.at("javascripts/selector.min.js")'></script>
+<script type='text/javascript' src='@routes.Assets.at("javascripts/selector.js")'></script>
     
     <!--<div class="well">-->
         <!--<h1>@message</h1>-->
     <!--</div>-->
 
     <!--<button id="getMessageButton">Get JSON Message</button>-->
-     <div id="mock" class="workPage">
-         @for(line <- lines) {
-        @line
-         }
-     </div>
-     <div class="resultPage">
 
-     </div>
-
+<!--<object data=http://www.web-source.net width="600" height="400" > <embed onload="SetupDOMSelection()" src=http://www1.macys.com/shop/juniors-clothing/juniors-dresses?id=18109 width="600" height="400" > </embed> Error: Embedded data could not be displayed. </object>-->
+<iframe onload="SetupDOMSelection()" name="iframename" id="iframename" src="http://www1.macys.com/shop/juniors-clothing/juniors-dresses?id=18109" width="777" height="615" scrolling="auto" frameborder="no" bordercolor="#fffffff" marginwidth="0" marginheight="0">
+    <!--<script type='text/javascript' src='@routes.Assets.at("javascripts/selector.js")'></script>-->
+<!--</iframe>-->
 }
