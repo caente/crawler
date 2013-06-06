@@ -1,14 +1,22 @@
-@(message: String)
+@(lines: List[String])
 
 @main("Welcome to Play Framework") {
 
     <script type='text/javascript' src='@routes.Assets.at("javascripts/index.min.js")'></script>
 <script type='text/javascript' src='@routes.Assets.at("javascripts/selector.min.js")'></script>
     
-    <div class="well">
-        <h1>@message</h1>
-    </div>
+    <!--<div class="well">-->
+        <!--<h1>@message</h1>-->
+    <!--</div>-->
 
-    <button id="getMessageButton">Get JSON Message</button>
+    <!--<button id="getMessageButton">Get JSON Message</button>-->
+     <div id="mock" class="workPage">
+         @for(line <- lines) {
+        @line
+         }
+     </div>
+     <div class="resultPage">
+
+     </div>
 
 }

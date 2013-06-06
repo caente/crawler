@@ -126,6 +126,7 @@
 			gHoverElement=e;
 			gHovering=true;
 			target=ev.target;
+			console.log(ElementInfo(e))
 			ev.stopPropagation();
 		};
 
@@ -142,24 +143,24 @@
 			//ev.stopPropagation();
 		};
 
-		this.mouse_click=function(ev)
-		{
-			if(!gHovering)return;
-			if(gHoverElement!=element ||ev.target!=target)return;
-			var e=element;
-			e.setAttribute('style',elementStyle);
-			ev.stopPropagation();
-			CleanupDOMSelection();
-			gHoverElement=null;
-			gHovering=false;
-			target=null;
-
-			if(ev.button==0)
-			{
-				gSelectedElement=e;
-				ElementSelected(e);	//finished selecting, cleanup then move to next part (section 2), element isolation.
-			}
-		};
+//		this.mouse_click=function(ev)
+//		{
+//			if(!gHovering)return;
+//			if(gHoverElement!=element ||ev.target!=target)return;
+//			var e=element;
+//			e.setAttribute('style',elementStyle);
+//			ev.stopPropagation();
+//			CleanupDOMSelection();
+//			gHoverElement=null;
+//			gHovering=false;
+//			target=null;
+//
+//			if(ev.button==0)
+//			{
+//				gSelectedElement=e;
+//				//ElementSelected(e);	//finished selecting, cleanup then move to next part (section 2), element isolation.
+//			}
+//		};
 
 		this.resetElementStyle=function()
 		{
