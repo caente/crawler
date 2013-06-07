@@ -17,7 +17,7 @@ import scala.collection.JavaConverters._
  * To change this template use File | Settings | File Templates.
  */
 case class Item(price: String, description: String, link: String, img: String) {
-  override def toString = "price:\t" + price + "\ndesc:\t" + description + "\nlink:\t" + link + "\nimg:\t" + img
+  override def toString = "price:\t%s\ndesc:\t%s\nlink:\t%s\nimg:\t%s".format(price,description,link,img)
 }
 
 case class Node(repr:Element) {
