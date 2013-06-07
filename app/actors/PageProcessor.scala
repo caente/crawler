@@ -20,6 +20,14 @@ case class Item(price: String, description: String, link: String, img: String) {
   override def toString = "price:\t" + price + "\ndesc:\t" + description + "\nlink:\t" + link + "\nimg:\t" + img
 }
 
+case class Node(repr:Element) {
+  def parent:Node = new Node(repr.parent())
+  def select(path:String):Seq[Node] = repr.select(path).asScala.map(new Node(_))
+  def text:String = repr.text
+  def attr(at:String):String = repr.attr(at)
+
+}
+
 object PageProcessor {
 
   /** If there is an prefix is added to the start of the result. Also checks if the text should be retrieved from an attribute or the actual content of the tag
@@ -29,7 +37,7 @@ object PageProcessor {
    * @param element
    * @return
    */
-  def process(prefix: Option[String])(attr: Option[String])(element: Element): String = {
+  def process(prefix: Option[String])(attr: Option[String])(element: Node): String = {
     val pr = prefix match {
       case Some(p: String) => p
       case None => ""
@@ -46,7 +54,7 @@ object PageProcessor {
    * @param element
    * @return
    */
-  def selectByPath(path: String)(element: Element): Elements = element.select(path)
+  def selectByPath(path: String)(element: Node): Seq[Node] = element.select(path)
 
   /**  Combines the processUP and the processByPath. The processUp finds the nth parent, then the processByPath finds the elements using css query
    *
@@ -57,7 +65,7 @@ object PageProcessor {
    * @param attr
    * @return
    */
-  def generalProcessor(prefix: String, levelsUp: Int, path: String, index: Int, attr: String): Element => String = processUP(levelsUp)(processByPath(path)(index)(process(Option(prefix))(Option(attr))))(_)
+  def generalProcessor(prefix: String, levelsUp: Int, path: String, index: Int, attr: String): Node => String = processUP(levelsUp)(processByPath(path)(index)(process(Option(prefix))(Option(attr))))(_)
 
   /** Inspects all the elements that the selector found, and for each one an Item is created, using the processors
    *
@@ -69,9 +77,9 @@ object PageProcessor {
    * @param processImg
    * @return
    */
-  def inspect(selector: Element => Elements)(element: Element, processPrice: Element => String, processDescription: Element => String, processLink: Element => String, processImg: Element => String): List[Item] = {
+  def inspect(selector: Node => Seq[Node])(element: Node, processPrice: Node => String, processDescription: Node => String, processLink: Node => String, processImg: Node => String): List[Item] = {
     val elements = selector(element)
-    elements.asScala.foldLeft(List[Item]()) {
+    elements.foldLeft(List[Item]()) {
       (items, el) =>
         new Item(processPrice(el), processDescription(el), processLink(el), processImg(el)) :: items
     }
@@ -92,9 +100,9 @@ object PageProcessor {
    * @param element
    * @return
    */
-  def processUP(up: Int)(p: Element => String)(element: Element): String = if (up == 0) p(element) else processUP(up - 1)(p)(element.parent())
+  def processUP(up: Int)(p: Node => String)(element: Node): String = if (up == 0) p(element) else processUP(up - 1)(p)(element.parent)
 
-  /** Finds the "pos" element of the list returned by the css query
+  /** Finds the "pos" repr of the list returned by the css query
    *
    * @param path
    * @param pos
@@ -102,10 +110,10 @@ object PageProcessor {
    * @param element
    * @return
    */
-  def processByPath(path: String)(pos: Int = 0)(p: Element => String)(element: Element): String = p(selectByPath(path)(element).get(pos))//p(element.select(path).get(pos))
+  def processByPath(path: String)(pos: Int = 0)(p: Node => String)(element: Node): String = p(selectByPath(path)(element).apply(pos))//p(repr.select(path).get(pos))
 }
 
-/** This evaluator can be used in the inspect function, like this:  Collector.collect(new Eval(element.hasClass("prices")), element)
+/** This evaluator can be used in the inspect function, like this:  Collector.collect(new Eval(repr.hasClass("prices")), repr)
  *
  * @param evaler
  */
@@ -136,17 +144,17 @@ object UglyTester extends App {
 
   def fetch(site: Site): List[Item] = {
 
-    //    def processDescriptionMacys(element: Element): String = element.parent.getElementsByClass("shortDescription").first().text()
+    //    def processDescriptionMacys(repr: Element): String = repr.parent.getElementsByClass("shortDescription").first().text()
     //
-    //    def processPriceMacys(element: Element): String = element.getElementsByAttributeValue("itemprop", "price").first().attr("content")
+    //    def processPriceMacys(repr: Element): String = repr.getElementsByAttributeValue("itemprop", "price").first().attr("content")
     //
-    //    def processImgMacys(element: Element) = element.parent().select("a").first().select("input").last().attr("value")
+    //    def processImgMacys(repr: Element) = repr.parent().select("a").first().select("input").last().attr("value")
     //
-    //    def processLinkMacys(element: Element) = "http://macys.com" + element.parent().select("a").first().attr("href")
+    //    def processLinkMacys(repr: Element) = "http://macys.com" + repr.parent().select("a").first().attr("href")
     //
-    //    def checkPrice(element: Element) = element.hasClass("prices")
+    //    def checkPrice(repr: Element) = repr.hasClass("prices")
     //
-    //    def selectByClass(element: Element) = Collector.collect(new Eval(checkPrice), element)
+    //    def selectByClass(repr: Element) = Collector.collect(new Eval(checkPrice), repr)
 
     val url = new URL(site.address)
     val doc = Jsoup.parse(url, 3000)
@@ -159,7 +167,7 @@ object UglyTester extends App {
     def link = generalProcessor("http://macys.com", 1, "a.imageLink", 0, "href")
     def img = generalProcessor(null, 1, "input:last-of-type", 0, "value")
 
-    inspectByPath("div.prices")(body, price, description, link, img)
+    inspectByPath("div.prices")(new Node(body), price, description, link, img)
   }
 
 
