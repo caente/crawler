@@ -17,26 +17,29 @@ import scala.collection.JavaConverters._
  * To change this template use File | Settings | File Templates.
  */
 case class Item(price: String, description: String, link: String, img: String) {
-  override def toString = "price:\t" + price + "\ndesc:\t" + description + "\nlink:\t" + link + "\nimg:\t" + img
+  override def toString = "price:\t%s\ndesc:\t%s\nlink:\t%s\nimg:\t%s".format(price, description, link, img)
 }
 
-case class Node(repr:Element) {
-  def parent:Node = new Node(repr.parent())
-  def select(path:String):Seq[Node] = repr.select(path).asScala.map(new Node(_))
-  def text:String = repr.text
-  def attr(at:String):String = repr.attr(at)
+case class Node(repr: Element) {
+  def parent: Node = new Node(repr.parent())
+
+  def select(path: String): Seq[Node] = repr.select(path).asScala.map(new Node(_))
+
+  def text: String = repr.text
+
+  def attr(at: String): String = repr.attr(at)
 
 }
 
 object PageProcessor {
 
   /** If there is an prefix is added to the start of the result. Also checks if the text should be retrieved from an attribute or the actual content of the tag
-   *
-   * @param prefix
-   * @param attr
-   * @param element
-   * @return
-   */
+    *
+    * @param prefix
+    * @param attr
+    * @param element
+    * @return
+    */
   def process(prefix: Option[String])(attr: Option[String])(element: Node): String = {
     val pr = prefix match {
       case Some(p: String) => p
@@ -49,34 +52,34 @@ object PageProcessor {
   }
 
   /** Makes an css query to find a list of elements. This elements will the ones that will "mark" the items we want to register.
-   *
-   * @param path
-   * @param element
-   * @return
-   */
+    *
+    * @param path
+    * @param element
+    * @return
+    */
   def selectByPath(path: String)(element: Node): Seq[Node] = element.select(path)
 
-  /**  Combines the processUP and the processByPath. The processUp finds the nth parent, then the processByPath finds the elements using css query
-   *
-   * @param prefix
-   * @param levelsUp
-   * @param path
-   * @param index
-   * @param attr
-   * @return
-   */
+  /** Combines the processUP and the processByPath. The processUp finds the nth parent, then the processByPath finds the elements using css query
+    *
+    * @param prefix
+    * @param levelsUp
+    * @param path
+    * @param index
+    * @param attr
+    * @return
+    */
   def generalProcessor(prefix: String, levelsUp: Int, path: String, index: Int, attr: String): Node => String = processUP(levelsUp)(processByPath(path)(index)(process(Option(prefix))(Option(attr))))(_)
 
   /** Inspects all the elements that the selector found, and for each one an Item is created, using the processors
-   *
-   * @param selector
-   * @param element
-   * @param processPrice
-   * @param processDescription
-   * @param processLink
-   * @param processImg
-   * @return
-   */
+    *
+    * @param selector
+    * @param element
+    * @param processPrice
+    * @param processDescription
+    * @param processLink
+    * @param processImg
+    * @return
+    */
   def inspect(selector: Node => Seq[Node])(element: Node, processPrice: Node => String, processDescription: Node => String, processLink: Node => String, processImg: Node => String): List[Item] = {
     val elements = selector(element)
     elements.foldLeft(List[Item]()) {
@@ -86,37 +89,40 @@ object PageProcessor {
   }
 
   /** Uses a selector from a css query
-   *
-   * @param path
-   * @return
-   */
+    *
+    * @param path
+    * @return
+    */
   def inspectByPath(path: String) = inspect(selectByPath(path))(_, _, _, _, _)
 
 
   /** Goes "up" parents
-   *
-   * @param up
-   * @param p
-   * @param element
-   * @return
-   */
-  def processUP(up: Int)(p: Node => String)(element: Node): String = if (up == 0) p(element) else processUP(up - 1)(p)(element.parent)
+    *
+    * @param up
+    * @param p
+    * @param element
+    * @return
+    */
+  def processUP(up: Int)(p: Node => String)(element: Node): String = if (up == 0) p(element) else if (element.parent != null) processUP(up - 1)(p)(element.parent) else throw new IllegalArgumentException("The node doesn't have a parent")
+
+
+  def getElement(pos: Int, elements: Seq[Node]): Node = if (pos == 0) elements.head else if (!elements.tail.isEmpty) getElement(pos - 1, elements.tail) else throw new IndexOutOfBoundsException()
 
   /** Finds the "pos" repr of the list returned by the css query
-   *
-   * @param path
-   * @param pos
-   * @param p
-   * @param element
-   * @return
-   */
-  def processByPath(path: String)(pos: Int = 0)(p: Node => String)(element: Node): String = p(selectByPath(path)(element).apply(pos))//p(repr.select(path).get(pos))
+    *
+    * @param path
+    * @param pos
+    * @param p
+    * @param element
+    * @return
+    */
+  def processByPath(path: String)(pos: Int = 0)(p: Node => String)(element: Node): String = p(getElement(pos, selectByPath(path)(element)))
 }
 
 /** This evaluator can be used in the inspect function, like this:  Collector.collect(new Eval(repr.hasClass("prices")), repr)
- *
- * @param evaler
- */
+  *
+  * @param evaler
+  */
 class Eval(evaler: Element => Boolean) extends Evaluator {
 
   def matches(root: Element, element: Element): Boolean = evaler(element)
@@ -124,8 +130,8 @@ class Eval(evaler: Element => Boolean) extends Evaluator {
 }
 
 /** Eventually will be the actor who makes this operations posible
- *
- */
+  *
+  */
 class PageProcessor extends Actor with ActorLogging {
 
   def receive = {
