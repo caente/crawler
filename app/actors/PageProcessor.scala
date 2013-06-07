@@ -17,6 +17,8 @@ import scala.collection.JavaConverters._
  * To change this template use File | Settings | File Templates.
  */
 case class Item(price: String, description: String, link: String, img: String) {
+  def this() = this(null, null, null, null)
+
   override def toString = "price:\t%s\ndesc:\t%s\nlink:\t%s\nimg:\t%s".format(price, description, link, img)
 }
 
@@ -84,7 +86,12 @@ object PageProcessor {
     val elements = selector(element)
     elements.foldLeft(List[Item]()) {
       (items, el) =>
-        new Item(processPrice(el), processDescription(el), processLink(el), processImg(el)) :: items
+        try {
+          new Item(processPrice(el), processDescription(el), processLink(el), processImg(el)) :: items
+        } catch {
+          case ex: IndexOutOfBoundsException => println(ex.getMessage)
+            items
+        }
     }
   }
 
@@ -106,7 +113,7 @@ object PageProcessor {
   def processUP(up: Int)(p: Node => String)(element: Node): String = if (up == 0) p(element) else if (element.parent != null) processUP(up - 1)(p)(element.parent) else throw new IllegalArgumentException("The node doesn't have a parent")
 
 
-  def getElement(pos: Int, elements: Seq[Node]): Node = if (pos == 0) elements.head else if (!elements.tail.isEmpty) getElement(pos - 1, elements.tail) else throw new IndexOutOfBoundsException()
+  def getElement(pos: Int, elements: Seq[Node]): Node = if (elements.isEmpty) throw new IndexOutOfBoundsException("No elements in this path") else if (pos == 0) elements.head else if (!elements.tail.isEmpty) getElement(pos - 1, elements.tail) else throw new IndexOutOfBoundsException()
 
   /** Finds the "pos" repr of the list returned by the css query
     *
@@ -167,9 +174,8 @@ object UglyTester extends App {
     val body = doc.body()
 
 
-
-    def description = generalProcessor(null, 1, "div.shortDescription", 0, null)
     def price = generalProcessor(null, 0, "*[itemprop=price]", 0, "content")
+    def description = generalProcessor(null, 1, "div.shortDescription", 0, null)
     def link = generalProcessor("http://macys.com", 1, "a.imageLink", 0, "href")
     def img = generalProcessor(null, 1, "input:last-of-type", 0, "value")
 
@@ -177,7 +183,7 @@ object UglyTester extends App {
   }
 
 
-  val site = new Site("http://www1.macys.com/shop/juniors-clothing/juniors-dresses?id=18109")
+  val site = new Site("http://www1.macys.com/shop/mens-clothing?id=1&edge=hybrid&cm_sp=navigation-_-top_nav-_-1_mens")
   val newDoc = fetch(site)
   val file = new File("result.txt")
   if (file.exists()) file.delete
